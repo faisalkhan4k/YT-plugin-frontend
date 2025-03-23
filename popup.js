@@ -2,13 +2,14 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
   const outputDiv = document.getElementById("output");
-  const API_KEY = "AIzaSyBmbEao-um6KfRTvCAcGIHx-pZDu1gPb_M";  // Replace with your actual YouTube Data API key
-  const API_URL = 'http://127.0.0.1:5000/';
+  const API_KEY = "AIzaSyBmbEao-um6KfRTvCAcGIHx-pZDu1gPb_M"; // Replace with your actual YouTube Data API key
+  const API_URL = "http://127.0.0.1:5000/";
 
-  // Get the current tab's URL
+  // Get the current tab's URL  
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     const url = tabs[0].url;
-    const youtubeRegex = /^https:\/\/(?:www\.)?youtube\.com\/watch\?v=([\w-]{11})/;
+    const youtubeRegex =
+      /^https:\/\/(?:www\.)?youtube\.com\/watch\?v=([\w-]{11})/;
     const match = url.match(youtubeRegex);
 
     if (match && match[1]) {
@@ -138,28 +139,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             </ul>
           </div>`;
 
-  
-
-    // Add a link to view product recommendations
-        outputDiv.innerHTML += `
-          <div class="section">
-            <div class="section-title">Product Recommendations</div>
-            <p>Fetching recommendations based on comments and sentiment analysis...</p>
-          </div>`;
-
-        // Fetch and display product recommendations
-        const recommendations = await fetchProductRecommendations(comments, sentimentCounts);
+        // Add a link to view product recommendations
+        const recommendations = await fetchProductRecommendations(comments,sentimentCounts);
         if (recommendations) {
           outputDiv.innerHTML += `
-            <div class="section">
-              <div class="section-title">Recommended Products</div>
-              <p>${recommendations}</p>
-            </div>`;
+                <div class="section">
+                    <div class="section-title">Recommended Products</div>
+                    <div class="recommendations-container">${recommendations}</div>
+                </div>`;
         } else {
           outputDiv.innerHTML += `<p>Failed to fetch product recommendations.</p>`;
         }
-      }
-      else {
+      } else {
         outputDiv.innerHTML = "<p>This is not a valid YouTube URL.</p>";
       }
     }
@@ -170,14 +161,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     let pageToken = "";
     try {
       while (comments.length < 100) {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${API_KEY}`);
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${API_KEY}`
+        );
         const data = await response.json();
         if (data.items) {
-          data.items.forEach(item => {
-            const commentText = item.snippet.topLevelComment.snippet.textOriginal;
+          data.items.forEach((item) => {
+            const commentText =
+              item.snippet.topLevelComment.snippet.textOriginal;
             const timestamp = item.snippet.topLevelComment.snippet.publishedAt;
-            const authorId = item.snippet.topLevelComment.snippet.authorChannelId?.value || 'Unknown';
-            comments.push({ text: commentText, timestamp: timestamp, authorId: authorId });
+            const authorId =
+              item.snippet.topLevelComment.snippet.authorChannelId?.value ||
+              "Unknown";
+            comments.push({
+              text: commentText,
+              timestamp: timestamp,
+              authorId: authorId,
+            });
           });
         }
         pageToken = data.nextPageToken;
@@ -201,10 +201,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (response.ok) {
         return result; // The result now includes sentiment and timestamp
       } else {
-        throw new Error(result.error || 'Error fetching predictions');
+        throw new Error(result.error || "Error fetching predictions");
       }
     } catch (error) {
-      console.error("Error fetching predictions:", error);  
+      console.error("Error fetching predictions:", error);
       outputDiv.innerHTML += "<p>Error fetching sentiment predictions.</p>";
       return null;
     }
@@ -215,19 +215,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch(`${API_URL}/generate_chart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sentiment_counts: sentimentCounts })
+        body: JSON.stringify({ sentiment_counts: sentimentCounts }),
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch chart image');
+        throw new Error("Failed to fetch chart image");
       }
       const blob = await response.blob();
       const imgURL = URL.createObjectURL(blob);
-      const img = document.createElement('img');
+      const img = document.createElement("img");
       img.src = imgURL;
-      img.style.width = '100%';
-      img.style.marginTop = '20px';
+      img.style.width = "100%";
+      img.style.marginTop = "20px";
       // Append the image to the chart-container div
-      const chartContainer = document.getElementById('chart-container');
+      const chartContainer = document.getElementById("chart-container");
       chartContainer.appendChild(img);
     } catch (error) {
       console.error("Error fetching chart image:", error);
@@ -240,19 +240,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch(`${API_URL}/generate_wordcloud`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ comments })
+        body: JSON.stringify({ comments }),
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch word cloud image');
+        throw new Error("Failed to fetch word cloud image");
       }
       const blob = await response.blob();
       const imgURL = URL.createObjectURL(blob);
-      const img = document.createElement('img');
+      const img = document.createElement("img");
       img.src = imgURL;
-      img.style.width = '100%';
-      img.style.marginTop = '20px';
+      img.style.width = "100%";
+      img.style.marginTop = "20px";
       // Append the image to the wordcloud-container div
-      const wordcloudContainer = document.getElementById('wordcloud-container');
+      const wordcloudContainer = document.getElementById("wordcloud-container");
       wordcloudContainer.appendChild(img);
     } catch (error) {
       console.error("Error fetching word cloud image:", error);
@@ -265,19 +265,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch(`${API_URL}/generate_trend_graph`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sentiment_data: sentimentData })
+        body: JSON.stringify({ sentiment_data: sentimentData }),
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch trend graph image');
+        throw new Error("Failed to fetch trend graph image");
       }
       const blob = await response.blob();
       const imgURL = URL.createObjectURL(blob);
-      const img = document.createElement('img');
+      const img = document.createElement("img");
       img.src = imgURL;
-      img.style.width = '100%';
-      img.style.marginTop = '20px';
+      img.style.width = "100%";
+      img.style.marginTop = "20px";
       // Append the image to the trend-graph-container div
-      const trendGraphContainer = document.getElementById('trend-graph-container');
+      const trendGraphContainer = document.getElementById(
+        "trend-graph-container"
+      );
       trendGraphContainer.appendChild(img);
     } catch (error) {
       console.error("Error fetching trend graph image:", error);
@@ -305,22 +307,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         body: JSON.stringify({ comments: preprocessedComments }),
       });
 
-      if (!response.ok) { 
+      if (!response.ok) {
         throw new Error("Failed to fetch product recommendations");
-      }
-      else{
+      } else {
         console.log("working! able to fetch");
       }
 
       const result = await response.json();
       return result.recommendations;
-    } 
-    catch (error) {
+    } catch (error) {
       console.error("Error fetching product recommendations:", error);
       return null;
     }
   }
-
-  
 
 });
