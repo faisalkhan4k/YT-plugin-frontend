@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Comment Analyzer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #808080; /* Grey background */
+        color: #ffff00; /* Yellow text */
+      }
+      .container {
+        background-color: #404040; /* Darker grey for container */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #ffff00; /* Yellow text */
+        text-align: center;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #ffff00; /* Yellow text */
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ffff00; /* Yellow border */
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: #404040; /* Darker grey background */
+        color: #ffff00; /* Yellow text */
+      }
+      button {
+        background-color: #404040; /* Darker grey background */
+        color: #ffff00; /* Yellow text */
+        padding: 10px 20px;
+        border: 1px solid #ffff00; /* Yellow border */
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #505050; /* Slightly lighter grey on hover */
+      }
+      #output {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ffff00; /* Yellow border */
+        border-radius: 4px;
+        background-color: #404040; /* Darker grey background */
+      }
+      .loading {
+        text-align: center;
+        display: none;
+        color: #ffff00; /* Yellow text */
+      }
+      .error {
+        color: #ff0000; /* Red for errors */
+        margin-top: 10px;
+      }
+      .metrics,
+      .sentiment,
+      .comments {
+        color: #ffff00; /* Yellow text */
+      }
+      .metrics p,
+      .sentiment p,
+      .comments p {
+        color: #ffff00; /* Yellow text */
+      }
+      .comments ul li {
+        color: #ffff00; /* Yellow text */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>YouTube Comment Analyzer</h1>
+      <div class="form-group">
+        <label for="videoUrl">Enter YouTube Video URL:</label>
+        <input
+          type="text"
+          id="videoUrl"
+          placeholder="https://www.youtube.com/watch?v=..."
+          required
+        />
+      </div>
+      <button onclick="analyzeComments()">Generate Report</button>
+      <div class="loading" id="loading">
+        Analyzing comments... Please wait...
+      </div>
+      <div id="output"></div>
+    </div>
+
+    <script>
+      async function analyzeComments() {
+        const videoUrl = document.getElementById("videoUrl").value;
+        const outputDiv = document.getElementById("output");
+        const loadingDiv = document.getElementById("loading");
+
+        // Show loading message
+        loadingDiv.style.display = "block";
+        outputDiv.innerHTML = "";
+
+        try {
+          // Extract video ID from URL
+          const videoId = extractVideoId(videoUrl);
+          if (!videoId) {
+            throw new Error("Invalid YouTube URL");
+          }
+
+          // Fetch comments
+          const comments = await fetchComments(videoId);
+          if (comments.length === 0) {
+            throw new Error("No comments found for this video");
+          }
+
+          // Get sentiment predictions
+          const predictions = await getSentimentPredictions(comments);
+
+          // Display results
+          displayResults(comments, predictions);
+        } catch (error) {
+          outputDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        } finally {
+          loadingDiv.style.display = "none";
+        }
+      }
+
+      function extractVideoId(url) {
+        const regExp =
+          /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return match && match[2].length === 11 ? match[2] : null;
+      }
+
+      async function fetchComments(videoId) {
+        const API_KEY = "YOUR_YOUTUBE_API_KEY"; // Replace with your API key
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&key=${API_KEY}`
+        );
+        const data = await response.json();
+        return data.items.map((item) => ({
+          text: item.snippet.topLevelComment.snippet.textOriginal,
+          timestamp: item.snippet.topLevelComment.snippet.publishedAt,
+          authorId:
+            item.snippet.topLevelComment.snippet.authorChannelId?.value ||
+            "Unknown",
+        }));
+      }
+
+      async function getSentimentPredictions(comments) {
+        const API_URL = "http://127.0.0.1:5000/";
+        const response = await fetch(`${API_URL}/predict_with_timestamps`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ comments }),
+        });
+        return await response.json();
+      }
+
+      function displayResults(comments, predictions) {
+        const outputDiv = document.getElementById("output");
+
+        // Calculate statistics
+        const totalComments = comments.length;
+        const uniqueCommenters = new Set(
+          comments.map((comment) => comment.authorId)
+        ).size;
+        const totalWords = comments.reduce(
+          (sum, comment) =>
+            sum +
+            comment.text.split(/\s+/).filter((word) => word.length > 0).length,
+          0
+        );
+        const avgWordLength = (totalWords / totalComments).toFixed(2);
+
+        // Calculate sentiment distribution
+        const sentimentCounts = { 1: 0, 0: 0, "-1": 0 };
+        predictions.forEach((item) => {
+          sentimentCounts[item.sentiment]++;
+        });
+
+        // Display results
+        outputDiv.innerHTML = `
+                <h2>Analysis Results</h2>
+                <div class="metrics">
+                    <p>Total Comments: ${totalComments}</p>
+                    <p>Unique Commenters: ${uniqueCommenters}</p>
+                    <p>Average Comment Length: ${avgWordLength} words</p>
+                </div>
+                <div class="sentiment">
+                    <h3>Sentiment Distribution</h3>
+                    <p>Positive: ${sentimentCounts[1]}</p>
+                    <p>Neutral: ${sentimentCounts[0]}</p>
+                    <p>Negative: ${sentimentCounts[-1]}</p>
+                </div>
+                <div class="comments">
+                    <h3>Top Comments</h3>
+                    <ul>
+                        ${predictions
+                          .slice(0, 5)
+                          .map(
+                            (item) => `
+                            <li>
+                                <p>${item.comment}</p>
+                                <small>Sentiment: ${item.sentiment}</small>
+                            </li>
+                        `
+                          )
+                          .join("")}
+                    </ul>
+                </div>
+            `;
+      }
+    </script>
+  </body>
+</html>
