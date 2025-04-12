@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const analyzeBtn = document.getElementById("analyze-btn");
   const outputDiv = document.getElementById("output");
-  const API_KEY = "AIzaSyBmbEao-um6KfRTvCAcGIHx-pZDu1gPb_M"; // Replace with your actual API key
+  const API_KEY = ""; // Replace with your actual API key
   const API_URL = "http://127.0.0.1:5000/";
 
   analyzeBtn.addEventListener("click", async () => {
