@@ -1,0 +1,122 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 2rem;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #444;
+}
+
+input[type="text"] {
+  width: 80%;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto 2rem auto;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.section {
+  background-color: white;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  border-left: 5px solid #007bff;
+  padding-left: 0.6rem;
+  color: #333;
+}
+
+.metric {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.metric-title {
+  font-size: 1rem;
+  color: #888;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #222;
+}
+
+.metrics-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.comment-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.comment-item {
+  padding: 0.8rem;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+}
+
+.comment-item:nth-child(odd) {
+  background-color: #f1f1f1;
+}
+
+.comment-sentiment {
+  font-weight: bold;
+  color: #007bff;
+}
+
+#chart-container img,
+#trend-graph-container img,
+#wordcloud-container img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+
+.recommendations-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.2rem;
+  padding: 1rem 0;
+}
+
+.recommendations-container img {
+  width: 100%;
+  border-radius: 8px;
+}

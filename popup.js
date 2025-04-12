@@ -2,14 +2,13 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
   const outputDiv = document.getElementById("output");
-  const API_KEY = ""; // Replace with your actual YouTube Data API key
+  const API_KEY = "AIzaSyBmbEao-um6KfRTvCAcGIHx-pZDu1gPb_M"; // Replace with your actual YouTube Data API key
   const API_URL = "http://127.0.0.1:5000/";
 
   // Get the current tab's URL  
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     const url = tabs[0].url;
-    const youtubeRegex =
-      /^https:\/\/(?:www\.)?youtube\.com\/watch\?v=([\w-]{11})/;
+    const youtubeRegex =/^https:\/\/(?:www\.)?youtube\.com\/watch\?v=([\w-]{11})/;
     const match = url.match(youtubeRegex);
 
     if (match && match[1]) {
